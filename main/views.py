@@ -18,7 +18,7 @@ import datetime
 
 def show_main(request):
     # fetch all Product object from the application's database
-    products = Product.objects.all()
+    products = Product.objects.filter(user=request.user)
 
     context = {
         'name': request.user.username, # My Name
@@ -55,6 +55,27 @@ def register(request):
             return redirect('main:login')
     context = {'form':form}
     return render(request, 'register.html', context)
+
+def edit_product(request, id):
+    # Get product by ID
+    product = Product.objects.get(pk = id)
+    # Set product as instance of form
+    form = ProductForm(request.POST or None, instance=product)
+
+    if form.is_valid() and request.method == "POST":
+        # Save the form and return to home page
+        form.save()
+        return HttpResponseRedirect(reverse('main:show_main'))
+    context = {'form': form}
+    return render(request, "edit_product.html", context)
+
+def delete_product(request, id):
+    # Get data by ID
+    product = Product.objects.get(pk=id)
+    # Delete data
+    product.delete()
+    # Return to the main page
+    return HttpResponseRedirect(reverse('main:show_main'))
 
 # authenticate a user
 def login_user(request):
